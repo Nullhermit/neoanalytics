@@ -65,12 +65,13 @@ export function ExportPanel() {
     s2.background = { color: "151028" };
     s2.addText("Dataset Summary", { x: 0.5, y: 0.3, fontSize: 28, color: "7C5CFF", bold: true });
     const nums = dataset.columns.filter((c) => c.type === "numeric");
-    const rows = [["Column", "n", "Mean", "Std Dev", "Min", "Max"]];
+    const rows: string[][] = [["Column", "n", "Mean", "Std Dev", "Min", "Max"]];
     for (const c of nums) {
       const s = describe(numericValues(dataset.rows, c.name));
       rows.push([c.name, String(s.n), s.mean.toFixed(2), s.stdev.toFixed(2), s.min.toFixed(2), s.max.toFixed(2)]);
     }
-    s2.addTable(rows, { x: 0.5, y: 1.1, w: 12.3, fontSize: 12, color: "FFFFFF", fill: { color: "1E1640" }, border: { type: "solid", pt: 1, color: "4C3AA8" } });
+    const tableRows = rows.map((r) => r.map((cell) => ({ text: cell })));
+    s2.addTable(tableRows, { x: 0.5, y: 1.1, w: 12.3, fontSize: 12, color: "FFFFFF", fill: { color: "1E1640" }, border: { type: "solid", pt: 1, color: "4C3AA8" } });
 
     const s3 = pres.addSlide();
     s3.background = { color: "151028" };

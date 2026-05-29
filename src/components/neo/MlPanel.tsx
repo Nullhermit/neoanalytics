@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import type * as TF from "@tensorflow/tfjs";
 import { Panel } from "./Panel";
 import { useDataset } from "@/lib/dataset-store";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -42,7 +43,7 @@ export function MlPanel() {
     for (let i = 0; i < totalEpochs; i++) {
       opt.minimize(() => {
         const pred = xs.matMul(w);
-        return pred.sub(ys).square().mean() as tf.Scalar;
+        return pred.sub(ys).square().mean() as TF.Scalar;
       });
       if (i % 4 === 0 || i === totalEpochs - 1) {
         const l = (xs.matMul(w).sub(ys).square().mean().dataSync()[0]);
