@@ -2,6 +2,7 @@ import { useDataset } from "@/lib/dataset-store";
 import { useWorkspaceMode } from "@/lib/workspace-mode";
 import { Upload, Sparkles, BarChart3, Brain, Database, Rocket, Cpu, LineChart, ShieldCheck, Code2, Zap, Github } from "lucide-react";
 import { DEMO_DATASETS } from "@/lib/data/demo";
+import { IntroGalaxy } from "./IntroGalaxy";
 
 export function Intro() {
   const { dataset, setDataset } = useDataset();
@@ -26,6 +27,9 @@ export function Intro() {
 
   return (
     <section className="space-y-10 animate-glitch-in">
+      {/* 3D INTERACTIVE GALAXY */}
+      <IntroGalaxy />
+
       {/* HERO */}
       <div className="relative overflow-hidden rounded-2xl border border-border bg-card/40 p-8 sm:p-12">
         <div className="absolute inset-0 bg-[image:var(--gradient-hero)] opacity-20 pointer-events-none" />
