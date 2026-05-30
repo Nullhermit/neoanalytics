@@ -1,7 +1,7 @@
 import { useDataset } from "@/lib/dataset-store";
 import { useWorkspaceMode } from "@/lib/workspace-mode";
 import { Upload, Sparkles, BarChart3, Brain, Database, Rocket, Cpu, LineChart, ShieldCheck, Code2, Zap, Github } from "lucide-react";
-import { loadDemo } from "@/lib/data/demo";
+import { DEMO_DATASETS } from "@/lib/data/demo";
 
 export function Intro() {
   const { dataset, setDataset } = useDataset();
@@ -47,7 +47,11 @@ export function Intro() {
 
           <div className="mt-7 flex flex-wrap gap-3">
             <button
-              onClick={() => setDataset(loadDemo(mode))}
+              onClick={() => {
+                const id = mode === "household" ? "household" : "sales";
+                const d = DEMO_DATASETS.find((x) => x.id === id) ?? DEMO_DATASETS[0];
+                setDataset(d.build());
+              }}
               className="group inline-flex items-center gap-2 rounded-md bg-[image:var(--gradient-hero)] px-5 py-2.5 text-sm font-semibold text-primary-foreground glow-primary hover:scale-[1.02] transition"
             >
               <Zap className="size-4" /> Instant Simulation
