@@ -77,14 +77,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
+      { title: "a fast analytical website" },
       { name: "description", content: "Neo Analytics v1.0 — ultra-fast client-side data analytics & visualization." },
       { name: "author", content: "Neo Analytics" },
-      { property: "og:title", content: "Neo Analytics v1.0" },
-      { property: "og:description", content: "Ultra-fast client-side data analytics & visualization." },
+      { property: "og:title", content: "a fast analytical website" },
+      { property: "og:description", content: "Neo Analytics v1.0 — ultra-fast client-side data analytics & visualization." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "a fast analytical website" },
+      { name: "twitter:description", content: "Neo Analytics v1.0 — ultra-fast client-side data analytics & visualization." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/p2kTF9MrFiOr3cJxh5PNuJPcjmo2/social-images/social-1780135847986-image_70e09086.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/p2kTF9MrFiOr3cJxh5PNuJPcjmo2/social-images/social-1780135847986-image_70e09086.webp" },
     ],
     links: [
       {
