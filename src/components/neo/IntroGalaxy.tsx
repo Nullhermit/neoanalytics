@@ -9,11 +9,11 @@ import { Zap } from "lucide-react";
 type NodeDef = { id: string; label: string; pos: [number, number, number]; color: string; demo: string };
 
 const NODES: NodeDef[] = [
-  { id: "sales",     label: "Sales Galaxy",     pos: [ 4,  1.5,  0],   color: "#7c5cff", demo: "sales" },
-  { id: "household", label: "Household Nebula", pos: [-4,  1.0,  1.5], color: "#5cd0ff", demo: "household" },
-  { id: "research",  label: "Research Cluster", pos: [ 0,  2.2, -3.5], color: "#c25cff", demo: "research" },
-  { id: "iot",       label: "IoT Stream Field", pos: [-3, -1.5, -2],   color: "#5cffae", demo: "iot" },
-  { id: "finance",   label: "Finance Quasar",   pos: [ 3, -1.8,  2],   color: "#ffd55c", demo: "finance" },
+  { id: "sales",      label: "Sales Galaxy",       pos: [ 4,  1.5,  0],   color: "#7c5cff", demo: "sales" },
+  { id: "household",  label: "Household Nebula",   pos: [-4,  1.0,  1.5], color: "#5cd0ff", demo: "household" },
+  { id: "churn",      label: "Churn Cluster",      pos: [ 0,  2.2, -3.5], color: "#c25cff", demo: "churn" },
+  { id: "healthcare", label: "Healthcare Pulsar",  pos: [-3, -1.5, -2],   color: "#5cffae", demo: "healthcare" },
+  { id: "fraud",      label: "Fraud Quasar",       pos: [ 3, -1.8,  2],   color: "#ffd55c", demo: "fraud" },
 ];
 
 function ScatterField() {
