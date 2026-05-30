@@ -15,6 +15,8 @@ import { MlPanel } from "@/components/neo/MlPanel";
 import { ExportPanel } from "@/components/neo/ExportPanel";
 import { AiInsights } from "@/components/neo/AiInsights";
 import { Chatbot } from "@/components/neo/Chatbot";
+import { Intro } from "@/components/neo/Intro";
+import { useDataset } from "@/lib/dataset-store";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/")({
@@ -46,9 +48,11 @@ function Index() {
 
 function Dashboard() {
   const { mode } = useWorkspaceMode();
+  const { dataset } = useDataset();
 
   return (
     <main className="mx-auto max-w-[1600px] p-4 sm:p-6 space-y-6">
+      {!dataset && <Intro />}
       <section className="grid gap-6 lg:grid-cols-[1fr_2fr]">
         <div className="space-y-6">
           <DataPanel />
