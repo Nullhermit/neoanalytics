@@ -111,7 +111,7 @@ export function IntroGalaxy() {
   };
 
   return (
-    <div className="relative h-[460px] w-full rounded-2xl overflow-hidden border border-border bg-background">
+    <div className="relative h-full w-full overflow-hidden bg-background">
       <Canvas camera={{ position: [0, 3, 11], fov: 55 }} dpr={[1, 2]}>
         <color attach="background" args={["#07061a"]} />
         <fog attach="fog" args={["#07061a", 10, 28]} />

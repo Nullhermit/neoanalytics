@@ -1,171 +1,305 @@
-import { useDataset } from "@/lib/dataset-store";
-import { useWorkspaceMode } from "@/lib/workspace-mode";
-import { Upload, Sparkles, BarChart3, Brain, Database, Rocket, Cpu, LineChart, ShieldCheck, Code2, Zap, Github } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useDataset, COUNTRIES, type CountryCode } from "@/lib/dataset-store";
 import { DEMO_DATASETS } from "@/lib/data/demo";
+import { parseFile } from "@/lib/data/parse";
 import { IntroGalaxy } from "./IntroGalaxy";
+import { Upload, Sparkles, Zap, ArrowRight, Globe2, ChevronRight, Database, MousePointerClick } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
+
+type Stage = "splash" | "setup" | "loading";
 
 export function Intro() {
-  const { dataset, setDataset } = useDataset();
-  const { mode } = useWorkspaceMode();
+  const { dataset, setDataset, country, setCountry } = useDataset();
+  const [stage, setStage] = useState<Stage>("splash");
+  const [loadingLabel, setLoadingLabel] = useState("");
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  // hide intro once dataset is loaded
   if (dataset) return null;
 
-  const features = [
-    { icon: Database, title: "Universal Ingestion", body: "Drop CSV, Excel or paste a table — parsed client-side in milliseconds, never leaves your browser." },
-    { icon: BarChart3, title: "2D + 3D Visuals", body: "Recharts dashboards plus a WebGL 2.0 engine for holographic point clouds and rotating scatter fields." },
-    { icon: Brain, title: "Mode-Aware AI", body: "Household, Research and Developer personas — the assistant rewrites itself for your audience." },
-    { icon: LineChart, title: "Live Statistics", body: "Means, medians, skew, 95% CIs, hypothesis tests and what-if outlier sliders, all re-computed on the fly." },
-    { icon: Cpu, title: "On-Device ML", body: "TensorFlow.js polynomial regression trains in your tab with a live loss-curve animation." },
-    { icon: Code2, title: "Dev Toolkit", body: "Auto-generated SQL, REST mocks in Python/JS/cURL, and a 1Hz live data-stream simulator." },
-  ];
+  const runLoading = async (label: string, work: () => Promise<void> | void) => {
+    setStage("loading");
+    setLoadingLabel(label);
+    setLoadingProgress(0);
+    const steps = [
+      "Allocating WebGL buffers",
+      "Spinning vector engine",
+      "Indexing columns",
+      "Profiling distributions",
+      "Calibrating AI persona",
+      "Materializing workspace",
+    ];
+    for (let i = 0; i < steps.length; i++) {
+      setLoadingLabel(steps[i]);
+      setLoadingProgress(((i + 1) / steps.length) * 100);
+      await new Promise((r) => setTimeout(r, 220));
+    }
+    await work();
+  };
 
-  const steps = [
-    { n: "01", icon: Upload, title: "Load data", body: "Upload a file, paste rows into the grid, or fire Instant Simulation for a pre-warmed demo." },
-    { n: "02", icon: Sparkles, title: "Pick a mode", body: "Switch persona in the header — UI and AI tone re-flow for the chosen audience." },
-    { n: "03", icon: Zap, title: "Explore instantly", body: "Charts, stats and AI insights stream in with sub-second latency as you tweak filters." },
-    { n: "04", icon: Rocket, title: "Export", body: "Ship lab-grade PDF reports or executive PPTX decks in a single click." },
-  ];
+  const startDemo = (id: string) => {
+    const d = DEMO_DATASETS.find((x) => x.id === id) ?? DEMO_DATASETS[0];
+    runLoading(d.label, () => setDataset(d.build()));
+  };
+
+  const onFile = async (file: File) => {
+    await runLoading(`Parsing ${file.name}`, async () => {
+      try {
+        const ds = await parseFile(file);
+        setDataset(ds);
+        toast.success(`Parsed ${ds.rows.length.toLocaleString()} rows × ${ds.columns.length} cols`);
+      } catch (e) {
+        toast.error("Parse failed: " + (e as Error).message);
+        setStage("setup");
+      }
+    });
+  };
+
+  const startManual = () => {
+    // jump into workspace with an empty editable scaffold dataset
+    runLoading("Opening blank ledger", () => {
+      setDataset({
+        name: "manual_entry.csv",
+        columns: [
+          { name: "Label", type: "categorical" },
+          { name: "Value", type: "numeric" },
+        ],
+        rows: Array.from({ length: 6 }, (_, i) => ({ Label: `Item ${i + 1}`, Value: 0 })),
+      });
+    });
+  };
 
   return (
-    <section className="space-y-10 animate-glitch-in">
-      {/* 3D INTERACTIVE GALAXY */}
-      <IntroGalaxy />
+    <div className="fixed inset-0 z-50 bg-background text-foreground overflow-hidden">
+      {stage === "splash" && <SplashStage onContinue={() => setStage("setup")} />}
+      {stage === "setup" && (
+        <SetupStage
+          country={country}
+          onCountry={setCountry}
+          onUpload={() => fileRef.current?.click()}
+          onManual={startManual}
+          onDemo={startDemo}
+        />
+      )}
+      {stage === "loading" && <LoadingStage label={loadingLabel} progress={loadingProgress} />}
+      <input
+        ref={fileRef}
+        type="file"
+        accept=".csv,.xlsx,.xls"
+        className="hidden"
+        onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
+      />
+    </div>
+  );
+}
 
-      {/* HERO */}
-      <div className="relative overflow-hidden rounded-2xl border border-border bg-card/40 p-8 sm:p-12">
-        <div className="absolute inset-0 bg-[image:var(--gradient-hero)] opacity-20 pointer-events-none" />
-        <div className="absolute -top-32 -right-32 size-96 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-32 -left-32 size-96 rounded-full bg-accent/20 blur-3xl pointer-events-none" />
+/* ─────────────── SPLASH ─────────────── */
+function SplashStage({ onContinue }: { onContinue: () => void }) {
+  const [hint, setHint] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setHint(true), 1600);
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") onContinue(); };
+    window.addEventListener("keydown", onKey);
+    return () => { clearTimeout(t); window.removeEventListener("keydown", onKey); };
+  }, [onContinue]);
 
-        <div className="relative max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-primary mb-5">
-            <span className="size-1.5 rounded-full bg-primary animate-pulse" /> Neo Analytics v1.0
+  return (
+    <div
+      onClick={onContinue}
+      className="relative h-full w-full cursor-pointer select-none"
+      title="Click anywhere to continue"
+    >
+      {/* fullscreen 3D galaxy */}
+      <div className="absolute inset-0">
+        <IntroGalaxy />
+      </div>
+      {/* dim overlay so HUD reads */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background/80" />
+
+      {/* Title HUD */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-col items-center pt-10 sm:pt-16 animate-fade-in">
+        <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-primary">
+          <span className="size-1.5 rounded-full bg-primary animate-pulse" /> Neo Analytics v1.0
+        </div>
+        <h1 className="mt-4 text-4xl sm:text-6xl font-bold tracking-tight text-glow text-center px-4">
+          Enter the <span className="bg-clip-text text-transparent bg-[image:var(--gradient-hero)]">Data Galaxy</span>
+        </h1>
+        <p className="mt-3 max-w-xl text-center text-sm sm:text-base text-muted-foreground px-4">
+          Drag to orbit · scroll to zoom · or pick a node to dive in.
+        </p>
+      </div>
+
+      {/* Click-anywhere hint */}
+      <div className={`pointer-events-none absolute inset-x-0 bottom-10 flex flex-col items-center transition-opacity duration-700 ${hint ? "opacity-100" : "opacity-0"}`}>
+        <div className="flex items-center gap-2 rounded-full border border-border bg-background/70 backdrop-blur px-4 py-2 text-xs uppercase tracking-[0.3em] text-foreground glow-primary animate-pulse">
+          <MousePointerClick className="size-3.5" /> Click anywhere to continue
+        </div>
+        <div className="mt-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Crafted by Nullhermit</div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────── SETUP ─────────────── */
+function SetupStage({
+  country, onCountry, onUpload, onManual, onDemo,
+}: {
+  country: CountryCode;
+  onCountry: (c: CountryCode) => void;
+  onUpload: () => void;
+  onManual: () => void;
+  onDemo: (id: string) => void;
+}) {
+  const [picked, setPicked] = useState<"upload" | "demo" | null>(null);
+  const meta = COUNTRIES.find((x) => x.code === country)!;
+
+  return (
+    <div className="relative h-full w-full overflow-y-auto">
+      {/* aurora background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute -top-40 -left-40 size-[40rem] rounded-full bg-primary/20 blur-3xl animate-pulse" />
+        <div className="absolute -bottom-40 -right-40 size-[40rem] rounded-full bg-accent/20 blur-3xl animate-pulse" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(124,92,255,0.12),transparent_40%),radial-gradient(circle_at_70%_80%,rgba(194,92,255,0.12),transparent_40%)]" />
+      </div>
+
+      <div className="relative mx-auto max-w-5xl px-6 py-12 sm:py-16 animate-fade-in">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-accent">
+            Initialize Workspace
           </div>
-          <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-glow leading-[1.05]">
-            Ultra-fast data intelligence,<br />
-            <span className="bg-clip-text text-transparent bg-[image:var(--gradient-hero)]">straight in your browser.</span>
-          </h1>
-          <p className="mt-5 text-base sm:text-lg text-muted-foreground leading-relaxed">
-            A single-page analytics workspace that parses, visualises, models and explains your data in milliseconds —
-            with three workspace personas, on-device ML, 3D WebGL plots, and a conversational AI that adapts to whoever's reading.
+          <h2 className="mt-4 text-3xl sm:text-5xl font-bold text-glow">
+            How do you want to <span className="bg-clip-text text-transparent bg-[image:var(--gradient-hero)]">begin?</span>
+          </h2>
+          <p className="mt-3 text-muted-foreground text-sm sm:text-base">
+            Choose your data source and tell us where you're operating — the AI tunes insights to your local economy.
           </p>
+        </div>
 
-          <div className="mt-7 flex flex-wrap gap-3">
-            <button
-              onClick={() => {
-                const id = mode === "household" ? "household" : "sales";
-                const d = DEMO_DATASETS.find((x) => x.id === id) ?? DEMO_DATASETS[0];
-                setDataset(d.build());
-              }}
-              className="group inline-flex items-center gap-2 rounded-md bg-[image:var(--gradient-hero)] px-5 py-2.5 text-sm font-semibold text-primary-foreground glow-primary hover:scale-[1.02] transition"
-            >
-              <Zap className="size-4" /> Instant Simulation
-            </button>
-            <a href="#how-it-works" className="inline-flex items-center gap-2 rounded-md border border-border bg-card/60 px-5 py-2.5 text-sm font-medium hover:border-primary/60 transition">
-              How it works
-            </a>
+        {/* Country selector */}
+        <div className="mb-8 rounded-xl border border-border bg-card/50 backdrop-blur p-4 sm:p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
+            <div className="flex items-center gap-2 text-sm">
+              <Globe2 className="size-4 text-primary" />
+              <span className="font-semibold">Region & currency</span>
+            </div>
+            <Select value={country} onValueChange={(v) => onCountry(v as CountryCode)}>
+              <SelectTrigger className="bg-background/60 w-full sm:w-[280px]"><SelectValue /></SelectTrigger>
+              <SelectContent className="max-h-[320px]">
+                {COUNTRIES.map((c) => (
+                  <SelectItem key={c.code} value={c.code}>
+                    <span className="font-mono mr-2">{c.flag}</span>
+                    {c.name} · {c.currency} ({c.symbol})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="text-xs text-muted-foreground flex-1">
+              <span className="text-foreground/80">{meta.flag} {meta.name}:</span> {meta.note}
+            </div>
           </div>
-
-          <div className="mt-6 flex items-center gap-2 text-xs text-muted-foreground">
-            <ShieldCheck className="size-3.5 text-[var(--neon-cyan)]" />
-            100% client-side · your data never leaves the tab
-          </div>
         </div>
 
-        {/* stat strip */}
-        <div className="relative mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl">
-          {[
-            ["<50ms", "Parse latency"],
-            ["3", "Workspace modes"],
-            ["WebGL 2", "3D engine"],
-            ["0", "Servers required"],
-          ].map(([v, l]) => (
-            <div key={l} className="rounded-lg border border-border bg-background/40 p-3">
-              <div className="text-xl font-bold text-glow">{v}</div>
-              <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mt-1">{l}</div>
+        {/* Two big options */}
+        <div className="grid gap-5 md:grid-cols-2">
+          {/* Option A */}
+          <button
+            onClick={() => setPicked("upload")}
+            className={`group relative text-left rounded-2xl border bg-card/40 backdrop-blur p-6 sm:p-8 transition-all overflow-hidden hover:scale-[1.01] ${picked === "upload" ? "border-primary glow-primary" : "border-border hover:border-primary/60"}`}
+          >
+            <div className="absolute inset-0 bg-[image:var(--gradient-hero)] opacity-0 group-hover:opacity-10 transition" />
+            <div className="size-12 rounded-lg bg-primary/15 border border-primary/40 grid place-items-center mb-4">
+              <Upload className="size-6 text-primary" />
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* FEATURES */}
-      <div>
-        <div className="mb-6">
-          <div className="text-[10px] uppercase tracking-[0.3em] text-accent">Capabilities</div>
-          <h2 className="text-2xl font-bold text-glow mt-1">Everything in one workspace</h2>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((f) => (
-            <div key={f.title} className="group relative rounded-xl border border-border bg-card/40 p-5 hover:border-primary/60 transition">
-              <div className="size-10 rounded-md bg-primary/10 border border-primary/30 grid place-items-center mb-3 group-hover:glow-primary transition">
-                <f.icon className="size-5 text-primary" />
-              </div>
-              <h3 className="font-semibold text-foreground">{f.title}</h3>
-              <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{f.body}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* HOW IT WORKS */}
-      <div id="how-it-works">
-        <div className="mb-6">
-          <div className="text-[10px] uppercase tracking-[0.3em] text-accent">Workflow</div>
-          <h2 className="text-2xl font-bold text-glow mt-1">From raw rows to insight in four steps</h2>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {steps.map((s, i) => (
-            <div key={s.n} className="relative rounded-xl border border-border bg-card/40 p-5">
-              <div className="absolute -top-3 left-5 text-[10px] tracking-[0.3em] font-mono text-primary bg-background px-2">{s.n}</div>
-              <s.icon className="size-5 text-accent mb-3" />
-              <h3 className="font-semibold">{s.title}</h3>
-              <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{s.body}</p>
-              {i < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-1/2 -right-2 size-3 rounded-full bg-primary/40 border border-primary" />
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* MODES */}
-      <div>
-        <div className="mb-6">
-          <div className="text-[10px] uppercase tracking-[0.3em] text-accent">Three personas</div>
-          <h2 className="text-2xl font-bold text-glow mt-1">One engine, three voices</h2>
-        </div>
-        <div className="grid gap-4 lg:grid-cols-3">
-          {[
-            { emoji: "🏠", title: "Household", body: "Friendly budgeting tips, savings rates and dining-cost nudges in plain language." },
-            { emoji: "🔬", title: "Research", body: "Confidence intervals, skew diagnostics, hypothesis tests and 'show-your-work' formulas." },
-            { emoji: "⚙️", title: "Developer", body: "Schema reports, SQL/REST mocks, live streams and on-device ML training curves." },
-          ].map((m) => (
-            <div key={m.title} className="rounded-xl border border-border bg-card/40 p-5">
-              <div className="text-3xl mb-2">{m.emoji}</div>
-              <h3 className="font-semibold">{m.title}</h3>
-              <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{m.body}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* CREATOR */}
-      <div className="rounded-2xl border border-border bg-card/40 p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="size-12 rounded-full bg-[image:var(--gradient-hero)] grid place-items-center glow-primary font-bold text-primary-foreground">
-            N
-          </div>
-          <div>
-            <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Crafted by</div>
-            <div className="text-xl font-bold text-glow">Nullhermit</div>
-            <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-              Designed and engineered as a zero-server, browser-native analytics engine — built for speed, clarity and curiosity.
+            <h3 className="text-xl font-bold">Upload or type your data</h3>
+            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+              Drop a CSV/XLSX file, or enter rows manually in an editable grid. Stays 100% in your browser.
             </p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <span onClick={(e) => { e.stopPropagation(); onUpload(); }} className="inline-flex items-center gap-1.5 rounded-md bg-primary/15 border border-primary/40 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/25 transition">
+                <Upload className="size-3.5" /> Upload file
+              </span>
+              <span onClick={(e) => { e.stopPropagation(); onManual(); }} className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background/60 px-3 py-1.5 text-xs font-semibold hover:border-primary/60 transition">
+                <Database className="size-3.5" /> Manual entry
+              </span>
+            </div>
+          </button>
+
+          {/* Option B */}
+          <div
+            onClick={() => setPicked("demo")}
+            className={`group relative rounded-2xl border bg-card/40 backdrop-blur p-6 sm:p-8 transition-all overflow-hidden cursor-pointer hover:scale-[1.01] ${picked === "demo" ? "border-accent glow-accent" : "border-border hover:border-accent/60"}`}
+          >
+            <div className="absolute inset-0 bg-[image:var(--gradient-hero)] opacity-0 group-hover:opacity-10 transition" />
+            <div className="size-12 rounded-lg bg-accent/15 border border-accent/40 grid place-items-center mb-4">
+              <Sparkles className="size-6 text-accent" />
+            </div>
+            <h3 className="text-xl font-bold">Use example dataset</h3>
+            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+              Pre-warmed industry datasets — feel the speed instantly without uploading anything.
+            </p>
+            <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {DEMO_DATASETS.map((d) => (
+                <button
+                  key={d.id}
+                  onClick={(e) => { e.stopPropagation(); onDemo(d.id); }}
+                  className="text-left inline-flex items-center justify-between gap-2 rounded-md border border-border bg-background/60 px-3 py-2 text-xs hover:border-accent/60 hover:bg-accent/10 transition"
+                >
+                  <span className="truncate">{d.label}</span>
+                  <ChevronRight className="size-3.5 text-muted-foreground shrink-0" />
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); onDemo("sales"); }}
+              className="mt-4 inline-flex items-center gap-2 rounded-md bg-[image:var(--gradient-hero)] px-4 py-2 text-xs font-semibold text-primary-foreground glow-primary hover:scale-[1.02] transition"
+            >
+              <Zap className="size-3.5" /> Instant Simulation <ArrowRight className="size-3.5" />
+            </button>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Github className="size-3.5" /> © {new Date().getFullYear()} Nullhermit · Neo Analytics
+
+        <div className="mt-10 text-center text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
+          Neo Analytics · crafted by Nullhermit
         </div>
       </div>
-    </section>
+    </div>
+  );
+}
+
+/* ─────────────── LOADING ─────────────── */
+function LoadingStage({ label, progress }: { label: string; progress: number }) {
+  return (
+    <div className="absolute inset-0 grid place-items-center bg-background/95 backdrop-blur-md">
+      {/* animated rings */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="size-[420px] rounded-full border border-primary/20 animate-[spin_18s_linear_infinite]" />
+        </div>
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="size-[300px] rounded-full border border-accent/30 animate-[spin_9s_linear_infinite_reverse]" />
+        </div>
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="size-[180px] rounded-full border-2 border-primary/60 animate-[spin_5s_linear_infinite] border-dashed" />
+        </div>
+      </div>
+
+      <div className="relative z-10 text-center w-[min(92vw,520px)]">
+        <div className="mx-auto size-20 rounded-2xl bg-[image:var(--gradient-hero)] grid place-items-center glow-primary animate-pulse">
+          <Sparkles className="size-9 text-primary-foreground" />
+        </div>
+        <div className="mt-6 text-[10px] uppercase tracking-[0.4em] text-primary">Booting Workspace</div>
+        <div className="mt-2 text-2xl font-bold text-glow">{label}…</div>
+
+        <div className="mt-6 h-1.5 w-full rounded-full bg-card/70 overflow-hidden border border-border">
+          <div
+            className="h-full bg-[image:var(--gradient-hero)] transition-all duration-200 glow-primary"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <div className="mt-2 font-mono text-[10px] text-muted-foreground">{progress.toFixed(0)}% · sub-second runtime</div>
+      </div>
+    </div>
   );
 }

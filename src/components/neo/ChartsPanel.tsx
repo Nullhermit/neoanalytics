@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { numericValues } from "@/lib/data/stats";
 import { Heatmap } from "./Heatmap";
-import { Viz3D } from "./Viz3D";
+import { Viz3D, type Viz3DType } from "./Viz3D";
 import { useWorkspaceMode } from "@/lib/workspace-mode";
 
 const PALETTE = ["#7c5cff", "#c25cff", "#5cd0ff", "#5cffae", "#ffd55c", "#ff5c9d"];
@@ -20,6 +20,7 @@ export function ChartsPanel() {
   const { dataset } = useDataset();
   const { mode } = useWorkspaceMode();
   const [is3D, set3D] = useState(false);
+  const [viz3d, setViz3d] = useState<Viz3DType>("bars");
   const numericCols = dataset?.columns.filter((c) => c.type === "numeric") ?? [];
   const catCols = dataset?.columns.filter((c) => c.type === "categorical") ?? [];
   const [xCol, setX] = useState("");
@@ -73,6 +74,21 @@ export function ChartsPanel() {
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             3D Engine <Switch checked={is3D} onCheckedChange={set3D} />
           </label>
+          {is3D && (
+            <Select value={viz3d} onValueChange={(v) => setViz3d(v as Viz3DType)}>
+              <SelectTrigger className="h-8 w-[150px] bg-card/60 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="bars">🧱 Glow Bars</SelectItem>
+                <SelectItem value="skyline">🏙️ Skyline Ring</SelectItem>
+                <SelectItem value="sphereCloud">🌌 Sphere Cloud</SelectItem>
+                <SelectItem value="helix">🧬 DNA Helix</SelectItem>
+                <SelectItem value="ribbon">🎗️ Neon Ribbon</SelectItem>
+                <SelectItem value="rings">💫 Saturn Rings</SelectItem>
+                <SelectItem value="spheres">🪐 Floating Spheres</SelectItem>
+                <SelectItem value="tower">🗼 Spiral Tower</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
           <Select value={x} onValueChange={setX}>
             <SelectTrigger className="h-8 w-[120px] bg-card/60 text-xs"><SelectValue placeholder="X" /></SelectTrigger>
             <SelectContent>{dataset.columns.map((c) => <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>)}</SelectContent>
@@ -85,7 +101,7 @@ export function ChartsPanel() {
       }
     >
       {is3D ? (
-        <Viz3D data={aggregated} />
+        <div className="h-[420px]"><Viz3D data={aggregated} type={viz3d} /></div>
       ) : (
         <Tabs defaultValue="bar">
           <TabsList className="bg-card/60">
