@@ -84,6 +84,18 @@ function buildSnippets(op: OpId, url: string, method: string, name: string) {
     curl = `curl -X ${method} '${url.replace("{id}", "123")}' \\\n  -H 'Authorization: Bearer $NEO_API_KEY' \\\n  -H 'Content-Type: application/json' \\\n  -d '${bodyJson ? bodyJson.replace(/\n\s*/g, "") : "{}"}'`;
   }
 
+  // ---------- R ----------
+  let r = "";
+  if (op === "stream") {
+    r = `library(httr2)\nlibrary(jsonlite)\n\nreq <- request("${url}") |>\n  req_headers(\n    Authorization = paste("Bearer", Sys.getenv("NEO_API_KEY")),\n    Accept = "text/event-stream"\n  )\n\nresp <- req_perform_stream(req, callback = function(chunk) {\n  line <- rawToChar(chunk)\n  if (startsWith(line, "data: ")) {\n    event <- fromJSON(substring(line, 7))\n    print(event)\n  }\n  TRUE\n})`;
+  } else if (op === "upload") {
+    r = `library(httr2)\n\nresp <- request("${url}") |>\n  req_headers(Authorization = paste("Bearer", Sys.getenv("NEO_API_KEY"))) |>\n  req_body_multipart(\n    file = curl::form_file("data.csv", type = "text/csv"),\n    mode = "append"\n  ) |>\n  req_perform()\n\nresp |> resp_body_json() |> str()`;
+  } else if (op === "delete" || method === "GET") {
+    r = `library(httr2)\nlibrary(jsonlite)\n\nresp <- request("${url.replace("{id}", "123")}") |>\n  req_method("${method}") |>\n  req_headers(Authorization = paste("Bearer", Sys.getenv("NEO_API_KEY"))) |>\n  req_perform()\n\n${method === "DELETE" ? "cat(\"deleted: \", resp_status(resp), \"\\n\")" : "data <- resp |> resp_body_json()\nstr(data)"}`;
+  } else {
+    r = `library(httr2)\nlibrary(jsonlite)\n\npayload <- ${bodyJson ? `fromJSON('${bodyJson.replace(/\n\s*/g, "")}')` : "list()"}\n\nresp <- request("${url.replace("{id}", "123")}") |>\n  req_method("${method}") |>\n  req_headers(\n    Authorization = paste("Bearer", Sys.getenv("NEO_API_KEY")),\n    \`Content-Type\` = "application/json"\n  ) |>\n  req_body_json(payload) |>\n  req_perform()\n\nresp |> resp_body_json() |> str()`;
+  }
+
   // ---------- Node / TypeScript SDK ----------
   const sdk = `import { NeoClient } from "@neo-analytics/sdk";\n\nconst neo = new NeoClient({ apiKey: process.env.NEO_API_KEY! });\n\nconst result = await neo.dataset("${name}").${
     op === "query"     ? `query({ select: ["*"], orderBy: "-revenue", limit: 100 })`
@@ -100,7 +112,7 @@ function buildSnippets(op: OpId, url: string, method: string, name: string) {
   : /* auth */          `auth.exchangeToken({ scope: ["read","write"] })`
   };\nconsole.log(result);`;
 
-  return { py, js, curl, sdk };
+  return { py, js, curl, sdk, r };
 }
 
 export function ApiMockPanel() {
@@ -129,11 +141,13 @@ export function ApiMockPanel() {
           <TabsTrigger value="py">Python</TabsTrigger>
           <TabsTrigger value="js">JavaScript</TabsTrigger>
           <TabsTrigger value="sdk">Node SDK</TabsTrigger>
+          <TabsTrigger value="r">R</TabsTrigger>
           <TabsTrigger value="curl">cURL</TabsTrigger>
         </TabsList>
         <TabsContent value="py"   className="mt-3"><CodeBlock language="python"     code={snippets.py} /></TabsContent>
         <TabsContent value="js"   className="mt-3"><CodeBlock language="javascript" code={snippets.js} /></TabsContent>
         <TabsContent value="sdk"  className="mt-3"><CodeBlock language="typescript" code={snippets.sdk} /></TabsContent>
+        <TabsContent value="r"    className="mt-3"><CodeBlock language="r"          code={snippets.r} /></TabsContent>
         <TabsContent value="curl" className="mt-3"><CodeBlock language="bash"       code={snippets.curl} /></TabsContent>
       </Tabs>
     </Panel>
