@@ -82,7 +82,10 @@ export function Intro({ onEnterDashboard }: { onEnterDashboard: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background text-foreground overflow-hidden">
+    <div
+      className="fixed left-0 top-0 z-50 bg-background text-foreground"
+      style={{ height: "100vh", width: "100vw", overflow: "hidden" }}
+    >
       {stage === "splash" && <SplashStage onContinue={() => setStage("setup")} />}
       {stage === "setup" && (
         <SetupStage
@@ -118,7 +121,8 @@ function SplashStage({ onContinue }: { onContinue: () => void }) {
   return (
     <div
       onClick={onContinue}
-      className="relative h-full w-full cursor-pointer select-none"
+      className="relative cursor-pointer select-none"
+      style={{ height: "100vh", width: "100vw", overflow: "hidden" }}
       title="Click anywhere to continue"
     >
       {/* fullscreen 3D galaxy */}
@@ -166,7 +170,7 @@ function SetupStage({
   const meta = COUNTRIES.find((x) => x.code === country)!;
 
   return (
-    <div className="relative h-full w-full overflow-y-auto">
+    <div className="relative" style={{ height: "100vh", width: "100vw", overflow: "hidden" }}>
       {/* aurora background */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-40 -left-40 size-[40rem] rounded-full bg-primary/20 blur-3xl animate-pulse" />
@@ -217,7 +221,8 @@ function SetupStage({
           <div
             role="button"
             tabIndex={0}
-            onClick={() => setPicked("upload")}
+            onClick={onManual}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onManual(); }}
             className={`group relative text-left rounded-2xl border bg-card/40 backdrop-blur p-6 sm:p-8 transition-all overflow-hidden hover:scale-[1.01] cursor-pointer ${picked === "upload" ? "border-primary glow-primary" : "border-border hover:border-primary/60"}`}
           >
             <div className="absolute inset-0 bg-[image:var(--gradient-hero)] opacity-0 group-hover:opacity-10 transition" />
@@ -240,7 +245,10 @@ function SetupStage({
 
           {/* Option B */}
           <div
-            onClick={() => setPicked("demo")}
+            role="button"
+            tabIndex={0}
+            onClick={() => onDemo("sales")}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onDemo("sales"); }}
             className={`group relative rounded-2xl border bg-card/40 backdrop-blur p-6 sm:p-8 transition-all overflow-hidden cursor-pointer hover:scale-[1.01] ${picked === "demo" ? "border-accent glow-accent" : "border-border hover:border-accent/60"}`}
           >
             <div className="absolute inset-0 bg-[image:var(--gradient-hero)] opacity-0 group-hover:opacity-10 transition" />
@@ -267,7 +275,7 @@ function SetupStage({
               onClick={(e) => { e.stopPropagation(); onDemo("sales"); }}
               className="mt-4 inline-flex items-center gap-2 rounded-md bg-[image:var(--gradient-hero)] px-4 py-2 text-xs font-semibold text-primary-foreground glow-primary hover:scale-[1.02] transition"
             >
-              <Zap className="size-3.5" /> Instant Simulation <ArrowRight className="size-3.5" />
+              <Zap className="size-3.5" /> Run System Example Simulation <ArrowRight className="size-3.5" />
             </button>
           </div>
         </div>
