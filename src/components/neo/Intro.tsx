@@ -83,7 +83,7 @@ export function Intro({ onEnterDashboard }: { onEnterDashboard: () => void }) {
 
   return (
     <div
-      className="fixed left-0 top-0 z-50 bg-background text-foreground"
+      className="absolute left-0 top-0 z-50 bg-background text-foreground"
       style={{ height: "100vh", width: "100vw", overflow: "hidden" }}
     >
       {stage === "splash" && <SplashStage onContinue={() => setStage("setup")} onPickDemo={startDemo} />}
@@ -91,7 +91,7 @@ export function Intro({ onEnterDashboard }: { onEnterDashboard: () => void }) {
         <SetupStage
           country={country}
           onCountry={setCountry}
-          onUpload={() => fileRef.current?.click()}
+          onUpload={startManual}
           onManual={startManual}
           onDemo={startDemo}
         />
@@ -228,7 +228,7 @@ function SetupStage({
             <div className="size-12 rounded-lg bg-primary/15 border border-primary/40 grid place-items-center mb-4">
               <Upload className="size-6 text-primary" />
             </div>
-            <h3 className="text-xl font-bold">Upload or type your data</h3>
+            <h3 className="text-xl font-bold">Upload Data / Manual Editor</h3>
             <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
               Drop a CSV/XLSX file, or enter rows manually in an editable grid. Stays 100% in your browser.
             </p>
