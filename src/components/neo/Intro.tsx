@@ -127,7 +127,7 @@ function SplashStage({ onContinue }: { onContinue: () => void }) {
     >
       {/* fullscreen 3D galaxy */}
       <div className="absolute inset-0">
-        <IntroGalaxy />
+        <IntroGalaxy onActivate={onContinue} />
       </div>
       {/* dim overlay so HUD reads */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background/80" />
