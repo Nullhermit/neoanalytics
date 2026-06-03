@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { ModeProvider, useWorkspaceMode } from "@/lib/workspace-mode";
 import { DatasetProvider } from "@/lib/dataset-store";
 import { Header } from "@/components/neo/Header";
@@ -16,7 +17,6 @@ import { ExportPanel } from "@/components/neo/ExportPanel";
 import { AiInsights } from "@/components/neo/AiInsights";
 import { Chatbot } from "@/components/neo/Chatbot";
 import { Intro } from "@/components/neo/Intro";
-import { useDataset } from "@/lib/dataset-store";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/")({
@@ -35,24 +35,42 @@ function Index() {
   return (
     <ModeProvider>
       <DatasetProvider>
-        <div className="min-h-screen text-foreground">
-          <Header />
-          <Dashboard />
-          <Chatbot />
-          <Toaster theme="dark" position="bottom-left" />
-        </div>
+        <AppShell />
       </DatasetProvider>
     </ModeProvider>
   );
 }
 
+function AppShell() {
+  const [showDashboard, setShowDashboard] = useState(false);
+
+  return (
+    <>
+      {!showDashboard ? (
+        <Intro onEnterDashboard={() => setShowDashboard(true)} />
+      ) : (
+        <MainDashboardLayout />
+      )}
+      <Toaster theme="dark" position="bottom-left" />
+    </>
+  );
+}
+
+function MainDashboardLayout() {
+  return (
+    <div className="min-h-screen text-foreground">
+      <Header />
+      <Dashboard />
+      <Chatbot />
+    </div>
+  );
+}
+
 function Dashboard() {
   const { mode } = useWorkspaceMode();
-  const { dataset } = useDataset();
 
   return (
     <main className="mx-auto max-w-[1600px] p-4 sm:p-6 space-y-6">
-      {!dataset && <Intro />}
       <section className="grid gap-6 lg:grid-cols-[1fr_2fr]">
         <div className="space-y-6">
           <DataPanel />

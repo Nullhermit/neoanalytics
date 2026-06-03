@@ -9,8 +9,8 @@ import { toast } from "sonner";
 
 type Stage = "splash" | "setup" | "loading";
 
-export function Intro() {
-  const { dataset, setDataset, country, setCountry } = useDataset();
+export function Intro({ onEnterDashboard }: { onEnterDashboard: () => void }) {
+  const { setDataset, country, setCountry } = useDataset();
   const [stage, setStage] = useState<Stage>("splash");
   const [loadingLabel, setLoadingLabel] = useState("");
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -18,14 +18,15 @@ export function Intro() {
 
   // lock body scroll while intro is mounted (prevents scrollbar gap behind fixed overlay)
   useEffect(() => {
-    if (dataset) return;
+    const prevHtml = document.documentElement.style.overflow;
     const prev = document.body.style.overflow;
+    document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
-  }, [dataset]);
-
-  // hide intro once dataset is loaded
-  if (dataset) return null;
+    return () => {
+      document.documentElement.style.overflow = prevHtml;
+      document.body.style.overflow = prev;
+    };
+  }, []);
 
   const runLoading = async (label: string, work: () => Promise<void> | void) => {
     setStage("loading");
@@ -45,6 +46,7 @@ export function Intro() {
       await new Promise((r) => setTimeout(r, 220));
     }
     await work();
+    onEnterDashboard();
   };
 
   const startDemo = (id: string) => {
@@ -80,13 +82,16 @@ export function Intro() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background text-foreground overflow-hidden">
-      {stage === "splash" && <SplashStage onContinue={() => setStage("setup")} />}
+    <div
+      className="absolute left-0 top-0 z-50 bg-background text-foreground"
+      style={{ height: "100vh", width: "100vw", overflow: "hidden" }}
+    >
+      {stage === "splash" && <SplashStage onContinue={() => setStage("setup")} onPickDemo={startDemo} />}
       {stage === "setup" && (
         <SetupStage
           country={country}
           onCountry={setCountry}
-          onUpload={() => fileRef.current?.click()}
+          onUpload={startManual}
           onManual={startManual}
           onDemo={startDemo}
         />
@@ -104,7 +109,7 @@ export function Intro() {
 }
 
 /* ─────────────── SPLASH ─────────────── */
-function SplashStage({ onContinue }: { onContinue: () => void }) {
+function SplashStage({ onContinue, onPickDemo }: { onContinue: () => void; onPickDemo: (id: string) => void }) {
   const [hint, setHint] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setHint(true), 1600);
@@ -116,12 +121,13 @@ function SplashStage({ onContinue }: { onContinue: () => void }) {
   return (
     <div
       onClick={onContinue}
-      className="relative h-full w-full cursor-pointer select-none"
+      className="relative cursor-pointer select-none"
+      style={{ height: "100vh", width: "100vw", overflow: "hidden" }}
       title="Click anywhere to continue"
     >
       {/* fullscreen 3D galaxy */}
       <div className="absolute inset-0">
-        <IntroGalaxy />
+        <IntroGalaxy onPickDemo={onPickDemo} />
       </div>
       {/* dim overlay so HUD reads */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background/80" />
@@ -160,11 +166,10 @@ function SetupStage({
   onManual: () => void;
   onDemo: (id: string) => void;
 }) {
-  const [picked, setPicked] = useState<"upload" | "demo" | null>(null);
   const meta = COUNTRIES.find((x) => x.code === country)!;
 
   return (
-    <div className="relative h-full w-full overflow-y-auto">
+    <div className="relative" style={{ height: "100vh", width: "100vw", overflow: "hidden" }}>
       {/* aurora background */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-40 -left-40 size-[40rem] rounded-full bg-primary/20 blur-3xl animate-pulse" />
@@ -215,14 +220,15 @@ function SetupStage({
           <div
             role="button"
             tabIndex={0}
-            onClick={() => setPicked("upload")}
-            className={`group relative text-left rounded-2xl border bg-card/40 backdrop-blur p-6 sm:p-8 transition-all overflow-hidden hover:scale-[1.01] cursor-pointer ${picked === "upload" ? "border-primary glow-primary" : "border-border hover:border-primary/60"}`}
+            onClick={onManual}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onManual(); }}
+            className="group relative text-left rounded-2xl border border-border bg-card/40 backdrop-blur p-6 sm:p-8 transition-all overflow-hidden hover:scale-[1.01] cursor-pointer hover:border-primary/60"
           >
             <div className="absolute inset-0 bg-[image:var(--gradient-hero)] opacity-0 group-hover:opacity-10 transition" />
             <div className="size-12 rounded-lg bg-primary/15 border border-primary/40 grid place-items-center mb-4">
               <Upload className="size-6 text-primary" />
             </div>
-            <h3 className="text-xl font-bold">Upload or type your data</h3>
+            <h3 className="text-xl font-bold">Upload Data / Manual Editor</h3>
             <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
               Drop a CSV/XLSX file, or enter rows manually in an editable grid. Stays 100% in your browser.
             </p>
@@ -238,8 +244,11 @@ function SetupStage({
 
           {/* Option B */}
           <div
-            onClick={() => setPicked("demo")}
-            className={`group relative rounded-2xl border bg-card/40 backdrop-blur p-6 sm:p-8 transition-all overflow-hidden cursor-pointer hover:scale-[1.01] ${picked === "demo" ? "border-accent glow-accent" : "border-border hover:border-accent/60"}`}
+            role="button"
+            tabIndex={0}
+            onClick={() => onDemo("sales")}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onDemo("sales"); }}
+            className="group relative rounded-2xl border border-border bg-card/40 backdrop-blur p-6 sm:p-8 transition-all overflow-hidden cursor-pointer hover:scale-[1.01] hover:border-accent/60"
           >
             <div className="absolute inset-0 bg-[image:var(--gradient-hero)] opacity-0 group-hover:opacity-10 transition" />
             <div className="size-12 rounded-lg bg-accent/15 border border-accent/40 grid place-items-center mb-4">
@@ -265,7 +274,7 @@ function SetupStage({
               onClick={(e) => { e.stopPropagation(); onDemo("sales"); }}
               className="mt-4 inline-flex items-center gap-2 rounded-md bg-[image:var(--gradient-hero)] px-4 py-2 text-xs font-semibold text-primary-foreground glow-primary hover:scale-[1.02] transition"
             >
-              <Zap className="size-3.5" /> Instant Simulation <ArrowRight className="size-3.5" />
+              <Zap className="size-3.5" /> Run System Example Simulation <ArrowRight className="size-3.5" />
             </button>
           </div>
         </div>

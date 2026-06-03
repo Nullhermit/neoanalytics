@@ -2,8 +2,6 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stars, Float, Html } from "@react-three/drei";
 import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { useDataset } from "@/lib/dataset-store";
-import { DEMO_DATASETS } from "@/lib/data/demo";
 import { Zap } from "lucide-react";
 
 type NodeDef = { id: string; label: string; pos: [number, number, number]; color: string; demo: string };
@@ -97,16 +95,14 @@ function Node({ node, onPick }: { node: NodeDef; onPick: (n: NodeDef) => void })
   );
 }
 
-export function IntroGalaxy() {
-  const { setDataset } = useDataset();
+export function IntroGalaxy({ onPickDemo }: { onPickDemo?: (id: string) => void }) {
   const [picked, setPicked] = useState<NodeDef | null>(null);
 
   const pick = (n: NodeDef) => {
     setPicked(n);
     // brief transition then load
     setTimeout(() => {
-      const d = DEMO_DATASETS.find((x) => x.id === n.demo) ?? DEMO_DATASETS[0];
-      setDataset(d.build());
+      onPickDemo?.(n.demo);
     }, 650);
   };
 
