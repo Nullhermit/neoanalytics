@@ -86,7 +86,7 @@ export function Intro({ onEnterDashboard }: { onEnterDashboard: () => void }) {
       className="fixed left-0 top-0 z-50 bg-background text-foreground"
       style={{ height: "100vh", width: "100vw", overflow: "hidden" }}
     >
-      {stage === "splash" && <SplashStage onContinue={() => setStage("setup")} />}
+      {stage === "splash" && <SplashStage onContinue={() => setStage("setup")} onPickDemo={startDemo} />}
       {stage === "setup" && (
         <SetupStage
           country={country}
@@ -109,7 +109,7 @@ export function Intro({ onEnterDashboard }: { onEnterDashboard: () => void }) {
 }
 
 /* ─────────────── SPLASH ─────────────── */
-function SplashStage({ onContinue }: { onContinue: () => void }) {
+function SplashStage({ onContinue, onPickDemo }: { onContinue: () => void; onPickDemo: (id: string) => void }) {
   const [hint, setHint] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setHint(true), 1600);
@@ -127,7 +127,7 @@ function SplashStage({ onContinue }: { onContinue: () => void }) {
     >
       {/* fullscreen 3D galaxy */}
       <div className="absolute inset-0">
-        <IntroGalaxy onActivate={onContinue} />
+        <IntroGalaxy onPickDemo={onPickDemo} />
       </div>
       {/* dim overlay so HUD reads */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background/80" />
