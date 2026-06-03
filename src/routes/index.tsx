@@ -17,7 +17,6 @@ import { ExportPanel } from "@/components/neo/ExportPanel";
 import { AiInsights } from "@/components/neo/AiInsights";
 import { Chatbot } from "@/components/neo/Chatbot";
 import { Intro } from "@/components/neo/Intro";
-import { useDataset } from "@/lib/dataset-store";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/")({
