@@ -166,7 +166,6 @@ function SetupStage({
   onManual: () => void;
   onDemo: (id: string) => void;
 }) {
-  const [picked, setPicked] = useState<"upload" | "demo" | null>(null);
   const meta = COUNTRIES.find((x) => x.code === country)!;
 
   return (
@@ -223,7 +222,7 @@ function SetupStage({
             tabIndex={0}
             onClick={onManual}
             onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onManual(); }}
-            className={`group relative text-left rounded-2xl border bg-card/40 backdrop-blur p-6 sm:p-8 transition-all overflow-hidden hover:scale-[1.01] cursor-pointer ${picked === "upload" ? "border-primary glow-primary" : "border-border hover:border-primary/60"}`}
+            className="group relative text-left rounded-2xl border border-border bg-card/40 backdrop-blur p-6 sm:p-8 transition-all overflow-hidden hover:scale-[1.01] cursor-pointer hover:border-primary/60"
           >
             <div className="absolute inset-0 bg-[image:var(--gradient-hero)] opacity-0 group-hover:opacity-10 transition" />
             <div className="size-12 rounded-lg bg-primary/15 border border-primary/40 grid place-items-center mb-4">
@@ -249,7 +248,7 @@ function SetupStage({
             tabIndex={0}
             onClick={() => onDemo("sales")}
             onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onDemo("sales"); }}
-            className={`group relative rounded-2xl border bg-card/40 backdrop-blur p-6 sm:p-8 transition-all overflow-hidden cursor-pointer hover:scale-[1.01] ${picked === "demo" ? "border-accent glow-accent" : "border-border hover:border-accent/60"}`}
+            className="group relative rounded-2xl border border-border bg-card/40 backdrop-blur p-6 sm:p-8 transition-all overflow-hidden cursor-pointer hover:scale-[1.01] hover:border-accent/60"
           >
             <div className="absolute inset-0 bg-[image:var(--gradient-hero)] opacity-0 group-hover:opacity-10 transition" />
             <div className="size-12 rounded-lg bg-accent/15 border border-accent/40 grid place-items-center mb-4">
