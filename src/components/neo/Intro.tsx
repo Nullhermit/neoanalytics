@@ -9,8 +9,8 @@ import { toast } from "sonner";
 
 type Stage = "splash" | "setup" | "loading";
 
-export function Intro() {
-  const { dataset, setDataset, country, setCountry } = useDataset();
+export function Intro({ onEnterDashboard }: { onEnterDashboard: () => void }) {
+  const { setDataset, country, setCountry } = useDataset();
   const [stage, setStage] = useState<Stage>("splash");
   const [loadingLabel, setLoadingLabel] = useState("");
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -18,14 +18,15 @@ export function Intro() {
 
   // lock body scroll while intro is mounted (prevents scrollbar gap behind fixed overlay)
   useEffect(() => {
-    if (dataset) return;
+    const prevHtml = document.documentElement.style.overflow;
     const prev = document.body.style.overflow;
+    document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
-  }, [dataset]);
-
-  // hide intro once dataset is loaded
-  if (dataset) return null;
+    return () => {
+      document.documentElement.style.overflow = prevHtml;
+      document.body.style.overflow = prev;
+    };
+  }, []);
 
   const runLoading = async (label: string, work: () => Promise<void> | void) => {
     setStage("loading");
@@ -45,6 +46,7 @@ export function Intro() {
       await new Promise((r) => setTimeout(r, 220));
     }
     await work();
+    onEnterDashboard();
   };
 
   const startDemo = (id: string) => {
