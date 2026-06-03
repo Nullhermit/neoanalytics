@@ -91,7 +91,7 @@ export function Intro({ onEnterDashboard }: { onEnterDashboard: () => void }) {
         <SetupStage
           country={country}
           onCountry={setCountry}
-          onUpload={startManual}
+          onUpload={() => fileRef.current?.click()}
           onManual={startManual}
           onDemo={startDemo}
         />
@@ -177,7 +177,7 @@ function SetupStage({
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(124,92,255,0.12),transparent_40%),radial-gradient(circle_at_70%_80%,rgba(194,92,255,0.12),transparent_40%)]" />
       </div>
 
-      <div className="relative mx-auto max-w-5xl px-6 py-12 sm:py-16 animate-fade-in">
+      <div className="relative z-50 pointer-events-auto mx-auto max-w-5xl px-6 py-12 sm:py-16 animate-fade-in">
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-accent">
             Initialize Workspace
