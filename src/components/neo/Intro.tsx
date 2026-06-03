@@ -16,6 +16,14 @@ export function Intro() {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // lock body scroll while intro is mounted (prevents scrollbar gap behind fixed overlay)
+  useEffect(() => {
+    if (dataset) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [dataset]);
+
   // hide intro once dataset is loaded
   if (dataset) return null;
 
@@ -204,9 +212,11 @@ function SetupStage({
         {/* Two big options */}
         <div className="grid gap-5 md:grid-cols-2">
           {/* Option A */}
-          <button
+          <div
+            role="button"
+            tabIndex={0}
             onClick={() => setPicked("upload")}
-            className={`group relative text-left rounded-2xl border bg-card/40 backdrop-blur p-6 sm:p-8 transition-all overflow-hidden hover:scale-[1.01] ${picked === "upload" ? "border-primary glow-primary" : "border-border hover:border-primary/60"}`}
+            className={`group relative text-left rounded-2xl border bg-card/40 backdrop-blur p-6 sm:p-8 transition-all overflow-hidden hover:scale-[1.01] cursor-pointer ${picked === "upload" ? "border-primary glow-primary" : "border-border hover:border-primary/60"}`}
           >
             <div className="absolute inset-0 bg-[image:var(--gradient-hero)] opacity-0 group-hover:opacity-10 transition" />
             <div className="size-12 rounded-lg bg-primary/15 border border-primary/40 grid place-items-center mb-4">
@@ -217,14 +227,14 @@ function SetupStage({
               Drop a CSV/XLSX file, or enter rows manually in an editable grid. Stays 100% in your browser.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
-              <span onClick={(e) => { e.stopPropagation(); onUpload(); }} className="inline-flex items-center gap-1.5 rounded-md bg-primary/15 border border-primary/40 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/25 transition">
+              <button type="button" onClick={(e) => { e.stopPropagation(); onUpload(); }} className="inline-flex items-center gap-1.5 rounded-md bg-primary/15 border border-primary/40 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/25 transition cursor-pointer">
                 <Upload className="size-3.5" /> Upload file
-              </span>
-              <span onClick={(e) => { e.stopPropagation(); onManual(); }} className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background/60 px-3 py-1.5 text-xs font-semibold hover:border-primary/60 transition">
+              </button>
+              <button type="button" onClick={(e) => { e.stopPropagation(); onManual(); }} className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background/60 px-3 py-1.5 text-xs font-semibold hover:border-primary/60 transition cursor-pointer">
                 <Database className="size-3.5" /> Manual entry
-              </span>
+              </button>
             </div>
-          </button>
+          </div>
 
           {/* Option B */}
           <div
