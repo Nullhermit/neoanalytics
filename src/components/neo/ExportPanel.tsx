@@ -4,6 +4,7 @@ import { useDataset } from "@/lib/dataset-store";
 import { describe, numericValues } from "@/lib/data/stats";
 import { FileDown, Presentation } from "lucide-react";
 import { toast } from "sonner";
+import type PptxGenJS from "pptxgenjs";
 
 export function ExportPanel() {
   const { dataset } = useDataset();
@@ -234,18 +235,18 @@ export function ExportPanel() {
     const TEXT = "F0EEFF";
     const MUTED = "9C9AB8";
 
-    const auroraBg = (s: pptxgen.Slide) => {
+    const auroraBg = (s: PptxGenJS.Slide) => {
       s.background = { color: INK };
       // soft "blobs"
       s.addShape("ellipse", { x: 9.5, y: -1.5, w: 6, h: 6, fill: { color: PRIMARY, transparency: 80 }, line: { color: INK, width: 0 } });
       s.addShape("ellipse", { x: -1, y: 4.5, w: 5, h: 5, fill: { color: ACCENT, transparency: 82 }, line: { color: INK, width: 0 } });
       s.addShape("ellipse", { x: 4.5, y: 5.5, w: 4, h: 4, fill: { color: CYAN, transparency: 88 }, line: { color: INK, width: 0 } });
     };
-    const chip = (s: pptxgen.Slide, label: string, x: number, y: number, color = PRIMARY) => {
+    const chip = (s: PptxGenJS.Slide, label: string, x: number, y: number, color = PRIMARY) => {
       s.addShape("roundRect", { x, y, w: 1.7, h: 0.32, fill: { color }, line: { color, width: 0 }, rectRadius: 0.16 });
       s.addText(label, { x, y, w: 1.7, h: 0.32, color: "FFFFFF", fontSize: 9, bold: true, align: "center", valign: "middle", fontFace: "Calibri" });
     };
-    const footer = (s: pptxgen.Slide, page: string) => {
+    const footer = (s: PptxGenJS.Slide, page: string) => {
       s.addText(`Neo Analytics · ${page}`, { x: 0.5, y: 7.05, w: 6, h: 0.3, color: MUTED, fontSize: 9 });
       s.addText("Crafted by Nullhermit", { x: 6.8, y: 7.05, w: 6, h: 0.3, color: MUTED, fontSize: 9, align: "right" });
     };
