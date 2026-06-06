@@ -262,6 +262,8 @@ function SetupStage({
               {DEMO_DATASETS.map((d) => (
                 <button
                   key={d.id}
+                  type="button"
+                  data-testid={`demo-${d.id}`}
                   onClick={(e) => { e.stopPropagation(); onDemo(d.id); }}
                   className="text-left inline-flex items-center justify-between gap-2 rounded-md border border-border bg-background/60 px-3 py-2 text-xs hover:border-accent/60 hover:bg-accent/10 transition"
                 >
