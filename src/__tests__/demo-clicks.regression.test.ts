@@ -4,6 +4,7 @@
  *
  * Run with:   bun test src/__tests__/demo-clicks.regression.test.ts
  */
+// @ts-expect-error - bun:test types not in tsconfig; this file is executed only via `bun test`
 import { test, expect } from "bun:test";
 import { DEMO_DATASETS } from "@/lib/data/demo";
 
