@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import type PptxGenJS from "pptxgenjs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DialogDescription } from "@/components/ui/dialog";
 
 /* ─────────────────────── Theme system ─────────────────────── */
 type Hex = string;
@@ -582,6 +583,9 @@ export function ExportPanel() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Export style preview · {theme.label}</DialogTitle>
+            <DialogDescription>
+              1:1 mockup of the cover slide for the selected style. Close and click Generate to export.
+            </DialogDescription>
           </DialogHeader>
           <div
             className="rounded-xl p-8 aspect-video relative overflow-hidden"
