@@ -71,7 +71,7 @@ function Dashboard({ onBackToGalaxy }: { onBackToGalaxy: () => void }) {
   const { mode } = useWorkspaceMode();
 
   return (
-    <main className="mx-auto max-w-[1600px] p-4 sm:p-6 space-y-6">
+    <main className="mx-auto max-w-[1600px] p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
       <section className="grid gap-6 lg:grid-cols-[1fr_2fr]">
         <div className="space-y-6">
           <DataPanel />
