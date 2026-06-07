@@ -17,6 +17,7 @@ import { ExportPanel } from "@/components/neo/ExportPanel";
 import { AiInsights } from "@/components/neo/AiInsights";
 import { Chatbot } from "@/components/neo/Chatbot";
 import { Intro } from "@/components/neo/Intro";
+import { Pager } from "@/components/neo/Pager";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/")({
@@ -49,24 +50,24 @@ function AppShell() {
       {!showDashboard ? (
         <Intro onEnterDashboard={() => setShowDashboard(true)} />
       ) : (
-        <MainDashboardLayout />
+        <MainDashboardLayout onBackToGalaxy={() => setShowDashboard(false)} />
       )}
       <Toaster theme="dark" position="bottom-left" />
     </>
   );
 }
 
-function MainDashboardLayout() {
+function MainDashboardLayout({ onBackToGalaxy }: { onBackToGalaxy: () => void }) {
   return (
     <div className="min-h-screen text-foreground">
       <Header />
-      <Dashboard />
+      <Dashboard onBackToGalaxy={onBackToGalaxy} />
       <Chatbot />
     </div>
   );
 }
 
-function Dashboard() {
+function Dashboard({ onBackToGalaxy }: { onBackToGalaxy: () => void }) {
   const { mode } = useWorkspaceMode();
 
   return (
@@ -119,6 +120,7 @@ function Dashboard() {
           </section>
         </>
       )}
+      <Pager onBackToGalaxy={onBackToGalaxy} />
     </main>
   );
 }
