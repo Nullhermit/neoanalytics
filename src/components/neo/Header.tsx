@@ -1,23 +1,28 @@
-import { Activity } from "lucide-react";
+import { useState } from "react";
+import { Activity, Menu } from "lucide-react";
 import { MODE_META, useWorkspaceMode, type WorkspaceMode } from "@/lib/workspace-mode";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 
 export function Header() {
   const { mode, setMode } = useWorkspaceMode();
+  const [open, setOpen] = useState(false);
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/70 backdrop-blur-xl">
-      <div className="flex h-16 items-center justify-between px-6">
-        <div className="flex items-center gap-3">
-          <div className="size-9 rounded-md bg-[image:var(--gradient-hero)] grid place-items-center glow-primary">
-            <Activity className="size-5 text-primary-foreground" />
+      <div className="flex h-14 sm:h-16 items-center justify-between px-3 sm:px-6 gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="size-8 sm:size-9 rounded-md bg-[image:var(--gradient-hero)] grid place-items-center glow-primary shrink-0">
+            <Activity className="size-4 sm:size-5 text-primary-foreground" />
           </div>
-          <div>
-            <h1 className="text-base font-bold tracking-wider text-glow">NEO ANALYTICS</h1>
-            <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">v1.0 · sub-second engine</p>
+          <div className="min-w-0">
+            <h1 className="text-sm sm:text-base font-bold tracking-wider text-glow truncate">NEO ANALYTICS</h1>
+            <p className="hidden sm:block text-[10px] uppercase tracking-[0.3em] text-muted-foreground">v1.0 · sub-second engine</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground">
+
+        {/* Desktop controls */}
+        <div className="hidden md:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-2 text-xs text-muted-foreground">
             <span className="size-2 rounded-full bg-[var(--neon-cyan)] animate-pulse" />
             <span>Engine online · WebGL 2.0</span>
           </div>
@@ -36,6 +41,51 @@ export function Header() {
             </SelectContent>
           </Select>
         </div>
+
+        {/* Mobile hamburger */}
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetTrigger asChild>
+            <button
+              type="button"
+              aria-label="Open workspace menu"
+              className="md:hidden inline-flex items-center justify-center size-10 rounded-md border border-border bg-card/60 hover:border-primary/60 transition"
+            >
+              <Menu className="size-5" />
+            </button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-[88vw] sm:max-w-sm">
+            <SheetHeader>
+              <SheetTitle>Workspace mode</SheetTitle>
+              <SheetDescription>Switch between household, research, and developer views.</SheetDescription>
+            </SheetHeader>
+            <div className="mt-6 space-y-2">
+              {(Object.keys(MODE_META) as WorkspaceMode[]).map((m) => (
+                <SheetClose asChild key={m}>
+                  <button
+                    type="button"
+                    onClick={() => setMode(m)}
+                    aria-current={mode === m ? "true" : undefined}
+                    className={`w-full text-left rounded-lg border px-3 py-3 transition ${
+                      mode === m
+                        ? "border-primary bg-primary/10 glow-primary"
+                        : "border-border bg-card/40 hover:border-primary/60"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{MODE_META[m].emoji}</span>
+                      <span className="font-semibold">{MODE_META[m].label}</span>
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">{MODE_META[m].tagline}</div>
+                  </button>
+                </SheetClose>
+              ))}
+            </div>
+            <div className="mt-6 flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="size-2 rounded-full bg-[var(--neon-cyan)] animate-pulse" />
+              <span>Engine online · WebGL 2.0</span>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </header>
   );
