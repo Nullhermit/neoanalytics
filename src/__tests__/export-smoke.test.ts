@@ -2,8 +2,8 @@
  * Smoke tests for export pipeline + intro click handler integrity.
  * Run with:  bun test src/__tests__/export-smoke.test.ts
  */
-// @ts-expect-error - bun:test types not in tsconfig
-import { test, expect } from "bun:test";
+// vitest
+import { test, expect } from "vitest";
 import { DEMO_DATASETS } from "@/lib/data/demo";
 import { describe as describeStats, numericValues } from "@/lib/data/stats";
 

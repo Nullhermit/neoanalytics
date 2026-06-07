@@ -4,8 +4,8 @@
  *
  * Run with:   bun test src/__tests__/demo-clicks.regression.test.ts
  */
-// @ts-expect-error - bun:test types not in tsconfig; this file is executed only via `bun test`
-import { test, expect } from "bun:test";
+// vitest
+import { test, expect } from "vitest";
 import { DEMO_DATASETS } from "@/lib/data/demo";
 
 // click ids fired by Intro setup card "Run System Example Simulation" and per-button onDemo calls
