@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Activity, Menu } from "lucide-react";
+import { Activity, Menu, HelpCircle } from "lucide-react";
 import { MODE_META, useWorkspaceMode, type WorkspaceMode } from "@/lib/workspace-mode";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 
-export function Header() {
+export function Header({ onStartTutorial }: { onStartTutorial?: () => void }) {
   const { mode, setMode } = useWorkspaceMode();
   const [open, setOpen] = useState(false);
   return (
@@ -26,8 +26,19 @@ export function Header() {
             <span className="size-2 rounded-full bg-[var(--neon-cyan)] animate-pulse" />
             <span>Engine online · WebGL 2.0</span>
           </div>
+          {onStartTutorial && (
+            <button
+              type="button"
+              onClick={onStartTutorial}
+              data-tour="help"
+              aria-label="Start feature walkthrough"
+              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card/60 px-2.5 py-1.5 text-xs hover:border-primary/60 transition"
+            >
+              <HelpCircle className="size-3.5" /> Tour
+            </button>
+          )}
           <Select value={mode} onValueChange={(v) => setMode(v as WorkspaceMode)}>
-            <SelectTrigger className="w-[260px] neon-border bg-card/60">
+            <SelectTrigger data-tour="mode-select" className="w-[260px] neon-border bg-card/60">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -80,6 +91,15 @@ export function Header() {
                 </SheetClose>
               ))}
             </div>
+            {onStartTutorial && (
+              <button
+                type="button"
+                onClick={() => { setOpen(false); onStartTutorial(); }}
+                className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-semibold hover:bg-primary/20 transition"
+              >
+                <HelpCircle className="size-3.5" /> Start feature tour
+              </button>
+            )}
             <div className="mt-6 flex items-center gap-2 text-xs text-muted-foreground">
               <span className="size-2 rounded-full bg-[var(--neon-cyan)] animate-pulse" />
               <span>Engine online · WebGL 2.0</span>
