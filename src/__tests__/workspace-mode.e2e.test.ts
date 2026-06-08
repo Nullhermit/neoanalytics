@@ -7,7 +7,7 @@
 import { test, expect } from "vitest";
 import { MODE_META, type WorkspaceMode } from "@/lib/workspace-mode";
 
-const ORDER: WorkspaceMode[] = ["household", "research", "developer"];
+const ORDER: WorkspaceMode[] = ["household", "research", "business", "developer"];
 
 test("all workspace modes have required metadata", () => {
   for (const m of ORDER) {

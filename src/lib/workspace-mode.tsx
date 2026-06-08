@@ -1,10 +1,11 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 
-export type WorkspaceMode = "household" | "research" | "developer";
+export type WorkspaceMode = "household" | "research" | "business" | "developer";
 
 export const MODE_META: Record<WorkspaceMode, { label: string; tagline: string; emoji: string }> = {
   household: { label: "Household & Budget", tagline: "Personal finance · friendly", emoji: "🏠" },
   research: { label: "Research & Analytics", tagline: "Academic · rigorous", emoji: "🔬" },
+  business: { label: "Business & Strategy", tagline: "KPIs · revenue · growth", emoji: "💼" },
   developer: { label: "Developer & Systems", tagline: "Engineering · raw metrics", emoji: "⚡" },
 };
 

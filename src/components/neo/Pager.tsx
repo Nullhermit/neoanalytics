@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight, Home } from "lucide-react";
 import { useWorkspaceMode, MODE_META, type WorkspaceMode } from "@/lib/workspace-mode";
 
-const ORDER: WorkspaceMode[] = ["household", "research", "developer"];
+const ORDER: WorkspaceMode[] = ["household", "research", "business", "developer"];
 
 export function Pager({ onBackToGalaxy }: { onBackToGalaxy?: () => void }) {
   const { mode, setMode } = useWorkspaceMode();
