@@ -72,6 +72,22 @@ export function AiInsights() {
         });
       }
       if (out.length === 0) out.push({ insight: "No numeric variables found.", suggestion: "Add at least one numeric column to run descriptive statistics." });
+    } else if (mode === "business") {
+      for (const c of nums.slice(0, 3)) {
+        const s = describe(numericValues(dataset.rows, c.name));
+        const cv = s.mean ? (s.stdev / Math.abs(s.mean)) * 100 : 0;
+        out.push({
+          insight: `${c.name}: average ${sym}${s.mean.toFixed(2)} per record · ${cv.toFixed(1)}% coefficient of variation across ${s.n} entries.`,
+          suggestion: cv > 50
+            ? `Volatility is high — segment this KPI by region/channel to isolate the top-quartile performers driving variance.`
+            : `KPI is steady — set a target of +10% QoQ and track weekly deltas in a dashboard alert.`,
+        });
+      }
+      if (out.length === 0) out.push({ insight: "No numeric KPIs detected.", suggestion: "Load the Sales demo or add a revenue column to surface growth insights." });
+      out.push({
+        insight: `Strategic context · ${cm.flag} ${cm.name}: ${cm.note}`,
+        suggestion: `Benchmark unit economics against the ${cm.currency} regional median before greenlighting expansion.`,
+      });
     } else {
       const nulls = dataset.rows.reduce((a, r) => a + dataset.columns.filter((c) => r[c.name] === null).length, 0);
       const total = dataset.rows.length * dataset.columns.length;

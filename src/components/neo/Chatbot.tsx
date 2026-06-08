@@ -83,6 +83,7 @@ export function Chatbot() {
                 Hi — I'm Neo AI. Right now I'm in <b className="text-accent">{personaLabel}</b> mode.
                 {mode === "household" && " Ask me about budgeting, saving more, or where your money's going."}
                 {mode === "research" && " Ask me to interpret a p-value, derive a formula, or explain your distribution."}
+                {mode === "business" && " Ask me about KPIs, revenue drivers, customer segments, or quarterly trends."}
                 {mode === "developer" && " Ask me for a SQL query, a Python fetch script, or a JS fetch snippet."}
               </div>
             )}
@@ -116,7 +117,7 @@ export function Chatbot() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); } }}
                 rows={2}
-                placeholder={mode === "developer" ? "Ask for SQL, Python, JS…" : mode === "household" ? "Ask about your budget…" : "Ask about your data…"}
+                placeholder={mode === "developer" ? "Ask for SQL, Python, JS…" : mode === "household" ? "Ask about your budget…" : mode === "business" ? "Ask about KPIs, revenue, growth…" : "Ask about your data…"}
                 className="flex-1 resize-none rounded-md bg-input/60 border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring scrollbar-thin"
               />
               <Button size="icon" onClick={submit} disabled={!input.trim() || status === "submitted" || status === "streaming"} className="bg-[image:var(--gradient-hero)] text-primary-foreground glow-primary self-end">
